@@ -6,7 +6,7 @@ import Debug.Trace
 
 main :: IO ()
 main = do
-  content <- readFile "input4.txt"
+  content <- readFile "inputs/4.txt"
   let ls = lines content
   let firstRow = DL.take 1 ls
   let ns = numbers (head firstRow)
