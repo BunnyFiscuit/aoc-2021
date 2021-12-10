@@ -1,6 +1,6 @@
 module Day8 where
 import System.IO
-import Data.List
+import Data.List (sort, sortBy, group, groupBy, findIndex, isInfixOf)
 import Debug.Trace
 import Data.Maybe
 
@@ -9,14 +9,17 @@ main = do
   contents <- readFile "inputs/8.txt"
   let ls = lines contents
   let ws = map (str2Entry . words) ls
-  putStrLn $ show ws
-  mapM_ (\(i,o) -> run i o) ws
+  -- print ws
+  ms <- mapM (\(i,o) -> run i o) ws
+  let xs = map (concat . map show) ms
+  print (sum (map (\x -> read x :: Int) xs))
 
-run :: [String] -> [String] -> IO ()
+run :: [String] -> [String] -> IO [Int]
 run inpt outpt = do
+  -- print inpt
   sg <- runSG inpt
   let ms = map (decode sg) outpt
-  putStrLn $ show (map fromJust (filter isJust ms))
+  return $ map fromJust (filter isJust ms)
 
 runSG :: [String] -> IO Segments
 runSG xs = return $ segment initSegments ezs xs
@@ -68,13 +71,16 @@ zero sg xs = insertAt 0 (find df ms) sg
   where df = diff (sort (sg !! 8)) (sort (sg !! 3))
         fs = remaining sg xs
         ms = zip fs (map sort fs)
-        find a [] = "0"
-        find a ((i,j):bs) = if (isInfixOf a j) then i else find a bs  
+        
+find :: String -> [(String,String)] -> String
+find a [] = "0"
+find a ((i,j):bs) = if (isElem j) then i else find a bs  
+  where isElem s = and $ map (\x -> isInfixOf [x] s) a  
 
 two  sg xs = insertAt 2 (head f) sg
   where f = filter (\x -> length x == 5) xs
 
-nine sg (x:xs) = insertAt 9 (head fs) sg
+nine sg xs = insertAt 9 (head fs) sg
   where fs = remaining sg xs
 
 remaining :: Segments -> [String] -> [String]
@@ -89,7 +95,7 @@ ezs :: [Finder]
 ezs = [one,four,seven,eight, -- 1,4,7,8
  (\sg xs -> fivesix (three sg (filter (\x -> length x == 5) xs)) xs), -- 1,3,4,5,6,7,8
  (\sg xs -> two sg (filter (\x -> not (elem x sg)) xs)), -- 1,2,3,4,5,6,7,8
- zero] -- 0,1,2,3,4,5,6,7,8,9
+ zero, nine] -- 0,1,2,3,4,5,6,7,8,9
 
 segment :: Segments -> [Finder] -> [String] -> [String]
 segment sg []      _ = sg
