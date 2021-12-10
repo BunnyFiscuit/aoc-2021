@@ -65,10 +65,10 @@ six  sg (x:xs) = if length a == 6 then (insertAt 6 a sg) else six sg xs
   where a = fst x
 
 zero sg xs = insertAt 0 (find df ms) sg
-  where df = sort $ diff (sg !! 8) (sg !! 3)
+  where df = diff (sort (sg !! 8)) (sort (sg !! 3))
         fs = remaining sg xs
         ms = zip fs (map sort fs)
-        find a [] = ""
+        find a [] = "0"
         find a ((i,j):bs) = if (isInfixOf a j) then i else find a bs  
 
 two  sg xs = insertAt 2 (head f) sg
@@ -89,7 +89,7 @@ ezs :: [Finder]
 ezs = [one,four,seven,eight, -- 1,4,7,8
  (\sg xs -> fivesix (three sg (filter (\x -> length x == 5) xs)) xs), -- 1,3,4,5,6,7,8
  (\sg xs -> two sg (filter (\x -> not (elem x sg)) xs)), -- 1,2,3,4,5,6,7,8
- zero, nine] -- 0,1,2,3,4,5,6,7,8,9
+ zero] -- 0,1,2,3,4,5,6,7,8,9
 
 segment :: Segments -> [Finder] -> [String] -> [String]
 segment sg []      _ = sg
@@ -109,6 +109,6 @@ diff (x:xs) to
 
 -- remove later
 ws = words "acedgfb cdfbe gcdfa fbcad dab cefabd cdfgeb eafb cagedb ab"
-ws2 = words "be cfbegad cbdgef fgaecd cgeb fdcge agebfd fecdb fabcd edb"
+ws2 = words "edbfga begcd cbg gc gcadebf fbgde acbgfd abcde gfcbed gfec"
 o  = "ab"
 f x = map (\a -> filter (==(o !! a)) x) [0,1]
