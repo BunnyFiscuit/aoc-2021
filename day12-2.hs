@@ -8,6 +8,12 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import Data.Maybe
 
+data Node  = Start | End | B String | S String deriving (Show, Eq, Ord)
+type Edge  = (Node, Node) 
+type MultiEdge = (Node, [Node])
+type Edges = [Edge]
+type Path  = [Node]
+
 main :: IO ()
 main = do
   contents <- readF 12
@@ -15,17 +21,6 @@ main = do
   let ps = parseStr contents
   putStrLn $ show ps
   -- mapM_ (putStrLn . show) ps
-
-type EdgeM = Map Node [Node]
-
-type EState a = State EdgeM a
-
-data Node  = Start | End | B String | S String deriving (Show, Eq, Ord)
-type Edge  = (Node, Node) 
-type MultiEdge = (Node, [Node])
-type Edges = [Edge]
-type Path  = [Node]
-type Paths = [Path]
 
 parseStr :: [String] -> [(Node, Node)]
 parseStr [] = []
@@ -45,7 +40,7 @@ correctEdges :: Edges -> Edges
 correctEdges [] = []
 correctEdges ((e,Start):es) = (Start,e) : correctEdges es
 correctEdges ((End,e)  :es) = (e,End) : correctEdges es
-correctEdges (e:es)             = e : correctEdges es 
+correctEdges (e:es)         = e : correctEdges es 
 
 startEdges :: Edges -> Edges
 startEdges es = filter isStartEdge es
@@ -69,40 +64,7 @@ ex = [
   (S "b",S "d"),(S "b",End)
   ]
 
-mapEm :: Edges -> EState EdgeM
-mapEm [] = get
-mapEm ((f, t):xs) = do
-  m <- get
-  case Map.lookup f m of
-    Just v -> do
-      put (Map.insert f (v ++ [t]) m)
-      mapEm xs
-    Nothing -> do
-      put (Map.insert f [t] m)
-      mapEm xs
-
-runIt :: Node -> EState Paths
-runIt Start = do
-  m <- get
-  case Map.lookup Start m of
-    Just t -> do
-      put (Map.delete Start m)
-      ps <- mapM runIt t
-      let ms = map (Start:) (concat ps)
-      return $ ms
-    Nothing -> return []
-
-runIt End = return [[End]]
-runIt c = do
-  m <- get
-  case Map.lookup c m of
-    Just t -> do
-      put (Map.delete c m)
-      undefined
-    Nothing -> return [[c]]
-
-
-makePath :: (Node, [Node]) -> Paths
+makePath :: (Node, [Node]) -> [Path]
 makePath (n, []) = []
 makePath (n, x:xs) = [n,x] : makePath (n, xs)
 
@@ -110,3 +72,14 @@ isCorrectPath :: Path -> Bool
 isCorrectPath (Start:[]) = False
 isCorrectPath (Start: xs) = last xs == End
 isCorrectPath          _  = False
+
+edgeToPath :: (Node, Node) -> [Node]
+edgeToPath (n, m) = [n,m]
+
+getNext :: [(Node, Node)] -> (Node, Node) -> [[(Node, Node)]]
+getNext xs (curr, End)  = [[(curr, End)]]
+getNext xs (curr, next) = fs : concat (map (getNext xs) fs)
+  where fs = filter (\(x,_) -> x == next) xs
+
+buildPaths :: [(Node, Node)] -> (Node,Node) -> [(Node, Node)]
+buildPaths xs (curr, next) = undefined 
