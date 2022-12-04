@@ -11,7 +11,6 @@ main = do
   -- putStrLn $ show contents
   let ps = parseStr contents
   putStrLn $ show ps
-  -- mapM_ (putStrLn . show) ps
 
 
 data MRecord = MRecord { 
@@ -21,14 +20,14 @@ data MRecord = MRecord {
 
 type EState a = State MRecord a
 
-data Node  = Start | End | B String | S String deriving (Show, Eq)
+data Node  = Start | End | Bg String | Sm String deriving (Show, Eq)
 type Edge  = (Node, Node) 
 type MultiEdge = (Node, [Node])
 type Edges = [Edge]
 type Path  = [Node]
 
 
-parseStr :: [String] -> [(Node, Node)]
+parseStr :: [String] -> [Edge]
 parseStr [] = []
 parseStr (x:xs) = (str2Node start, str2Node end) : parseStr xs
   where start = takeWhile (/='-') x
@@ -40,7 +39,7 @@ str2Node "end"   = End
 str2Node x       = toCave x
 
 toCave :: String -> Node
-toCave x = if isBigCave x then B x else S x
+toCave x = if isBigCave x then Bg x else Sm x
 
 isBigCave :: String -> Bool
 isBigCave xs = and (map isUpper xs)
